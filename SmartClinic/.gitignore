@@ -1,0 +1,12 @@
+# Compiled files
+*.class
+*.exe
+
+# Runtime JSON files
+data/*_input.json
+data/*_output.json
+data/*_db.json
+
+# OS files
+.DS_Store
+Thumbs.db
