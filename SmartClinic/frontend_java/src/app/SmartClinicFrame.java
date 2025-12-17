@@ -36,3 +36,5 @@ public class SmartClinicFrame extends JFrame {
         add(tabs, BorderLayout.CENTER);
     }
 }
+
+
