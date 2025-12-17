@@ -115,3 +115,4 @@ public class PatientPanel extends JPanel {
         table.getTableHeader().setForeground(Color.WHITE);
     }
 }
+
