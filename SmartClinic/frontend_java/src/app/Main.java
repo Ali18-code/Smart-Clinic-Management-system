@@ -8,6 +8,11 @@ import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
+
+
+        //splash screen
+        new SplashScreen();
+
         // Create the frame for the application
         JFrame frame = new JFrame("Smart Clinic Management System");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

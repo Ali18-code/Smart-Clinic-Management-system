@@ -36,7 +36,7 @@ public class DashboardPanel extends JPanel {
         JButton btnEmergency = new JButton("Emergency");
         btnEmergency.setFont(new Font("Arial", Font.PLAIN, 18));
         btnEmergency.setFocusPainted(false);
-        btnEmergency.setBackground(new Color(34, 193, 195));
+        btnEmergency.setBackground(new Color(34, 193, 195)); 
         btnEmergency.setForeground(Color.WHITE);
         btnEmergency.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
