@@ -8,15 +8,24 @@ import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
+        // Set the Look and Feel to a modern style
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-
-        //splash screen
-        new SplashScreen();
+        // Show the splash screen directly by creating an instance of SplashScreen
+        SwingUtilities.invokeLater(() -> {
+            new SplashScreen();  // Create instance of SplashScreen to show it
+        });
 
         // Create the frame for the application
         JFrame frame = new JFrame("Smart Clinic Management System");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 600);
+        frame.setLocationRelativeTo(null); // Center the window on the screen
+        frame.setResizable(true); // Allow resizing the window
 
         // Create a CardLayout for switching between panels
         CardLayout cardLayout = new CardLayout();
@@ -27,7 +36,7 @@ public class Main {
         PatientPanel patientPanel = new PatientPanel();
         EmergencyPanel emergencyPanel = new EmergencyPanel();
 
-        // Add panels to the main panel
+        // Add panels to the main panel with unique names
         mainPanel.add(dashboardPanel, "DashboardPanel");
         mainPanel.add(patientPanel, "PatientPanel");
         mainPanel.add(emergencyPanel, "EmergencyPanel");

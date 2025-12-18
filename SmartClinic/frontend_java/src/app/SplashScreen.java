@@ -23,10 +23,10 @@ public class SplashScreen extends JFrame {
         setUndecorated(true); // Hide title bar
         setVisible(true);
 
-        // Timer to close the splash screen after 3 seconds
+        // Timer to close the splash screen after 3 seconds and show the main window
         new Timer(3000, e -> {
-            dispose();
-            new Main();  // Open the main window
+            dispose(); // Close splash screen
+            SwingUtilities.invokeLater(() -> new Main());  // Open the main window
         }).start();
     }
 

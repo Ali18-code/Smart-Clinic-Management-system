@@ -2,12 +2,13 @@ package app.panels;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class DashboardPanel extends JPanel {
     public DashboardPanel() {
         setLayout(new BorderLayout());
-        
+
         // Create a title label for the Dashboard
         JLabel title = new JLabel("Smart Clinic Management System", SwingConstants.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 24));
@@ -20,11 +21,7 @@ public class DashboardPanel extends JPanel {
         buttonPanel.setBackground(new Color(41, 128, 185));  // Set a background color for the panel
         
         // Create Patients button
-        JButton btnPatients = new JButton("Patients");
-        btnPatients.setFont(new Font("Arial", Font.PLAIN, 18));
-        btnPatients.setFocusPainted(false);
-        btnPatients.setBackground(new Color(34, 193, 195));
-        btnPatients.setForeground(Color.WHITE);
+        JButton btnPatients = createRoundedButton("Patients");
         btnPatients.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Switch to Patient Panel
@@ -33,11 +30,7 @@ public class DashboardPanel extends JPanel {
         });
 
         // Create Emergency button
-        JButton btnEmergency = new JButton("Emergency");
-        btnEmergency.setFont(new Font("Arial", Font.PLAIN, 18));
-        btnEmergency.setFocusPainted(false);
-        btnEmergency.setBackground(new Color(34, 193, 195)); 
-        btnEmergency.setForeground(Color.WHITE);
+        JButton btnEmergency = createRoundedButton("Emergency");
         btnEmergency.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Switch to Emergency Panel
@@ -54,5 +47,17 @@ public class DashboardPanel extends JPanel {
 
         // Set the background color of the Dashboard
         setBackground(new Color(52, 152, 219));  // Light blue background
+    }
+
+    // Method to create rounded buttons
+    private JButton createRoundedButton(String text) {
+        JButton button = new JButton(text);
+        button.setFocusPainted(false);
+        button.setBackground(new Color(34, 193, 195)); // Aqua color for the button
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Arial", Font.PLAIN, 18));
+        button.setBorder(BorderFactory.createLineBorder(new Color(34, 193, 195), 2, true));
+        button.setBorderPainted(true);
+        return button;
     }
 }
