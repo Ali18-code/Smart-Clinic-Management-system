@@ -2,7 +2,6 @@ package app.panels;
 
 import app.util.*;
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
 
 public class EmergencyPanel extends JPanel {
@@ -11,11 +10,16 @@ public class EmergencyPanel extends JPanel {
     private JTextArea output;
 
     public EmergencyPanel() {
-        setLayout(new BorderLayout(10,10));
-        setBackground(new Color(245,247,250));
+        setLayout(new BorderLayout(15, 15));
+        setBackground(new Color(245, 247, 250));
 
-        JPanel form = new JPanel(new GridLayout(2,4,10,10));
-        form.setBorder(BorderFactory.createTitledBorder("Emergency Details"));
+        // ================= FORM PANEL =================
+        JPanel form = new JPanel(new GridLayout(2, 4, 10, 10));
+        form.setBackground(Color.WHITE);
+        form.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Color.GRAY),
+                "Emergency Details"
+        ));
 
         name = new JTextField();
         severity = new JTextField();
@@ -34,28 +38,38 @@ public class EmergencyPanel extends JPanel {
 
         add(form, BorderLayout.NORTH);
 
-        JPanel buttons = new JPanel();
-        
-        // Improved buttons with hover effects and better color contrast
-        JButton add = styledButton("Add Emergency Patient", new Color(231, 76, 60));
-        JButton process = styledButton("Process Next", new Color(241, 196, 15));
-        JButton route = styledButton("Show Shortest Route", new Color(52, 152, 219));
+        // ================= BUTTON PANEL =================
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER, 25, 15));
+        buttons.setBackground(new Color(245, 247, 250));
 
-        buttons.add(add);
-        buttons.add(process);
-        buttons.add(route);
+        JButton addBtn     = classicButton("Add Emergency Patient", new Color(192, 57, 43));
+        JButton processBtn = classicButton("Process Next", new Color(243, 156, 18));
+        JButton routeBtn   = classicButton("Show Shortest Route", new Color(41, 128, 185));
+
+        buttons.add(addBtn);
+        buttons.add(processBtn);
+        buttons.add(routeBtn);
+
         add(buttons, BorderLayout.CENTER);
 
-        output = new JTextArea();
+        // ================= OUTPUT AREA =================
+        output = new JTextArea(7, 30);
         output.setFont(new Font("Consolas", Font.PLAIN, 13));
         output.setEditable(false);
+        output.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Color.GRAY),
+                "System Output"
+        ));
+
         add(new JScrollPane(output), BorderLayout.SOUTH);
 
-        add.addActionListener(e -> runBackend("ADD_EMERGENCY"));
-        process.addActionListener(e -> runBackend("PROCESS"));
-        route.addActionListener(e -> runBackend("ROUTE"));
+        // ================= ACTIONS =================
+        addBtn.addActionListener(e -> runBackend("ADD_EMERGENCY"));
+        processBtn.addActionListener(e -> runBackend("PROCESS"));
+        routeBtn.addActionListener(e -> runBackend("ROUTE"));
     }
 
+    // ================= BACKEND CALL =================
     private void runBackend(String action) {
         try {
             String json = "{"
@@ -68,41 +82,42 @@ public class EmergencyPanel extends JPanel {
 
             FileUtil.writeText(
                     BackendRunner.DATA_DIR + "emergency_input.json", json);
+
             BackendRunner.run("emergency");
 
             output.append(
-                FileUtil.readText(
-                    BackendRunner.DATA_DIR + "emergency_output.json") + "\n");
+                    FileUtil.readText(
+                            BackendRunner.DATA_DIR + "emergency_output.json") + "\n");
 
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage());
         }
     }
 
-    private JButton styledButton(String text, Color bg) {
+    // ================= PROFESSIONAL CLASSIC BUTTON =================
+    private JButton classicButton(String text, Color bg) {
         JButton b = new JButton(text);
-        b.setBackground(bg);
+
+        // TEXT
+        b.setFont(new Font("Segoe UI", Font.BOLD, 14));
         b.setForeground(Color.WHITE);
-        b.setFont(new Font("Segoe UI", Font.BOLD, 14));  // Adjusted font size for better readability
+
+        // BACKGROUND
+        b.setBackground(bg);
+        b.setOpaque(true);
+        b.setContentAreaFilled(true);
+
+        // SIZE
+        b.setPreferredSize(new Dimension(240, 45));
+
+        // CLASSIC DESKTOP LOOK
         b.setFocusPainted(false);
-        b.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));  // Improved padding
-        b.setPreferredSize(new Dimension(180, 40));  // Consistent button size
+        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createRaisedBevelBorder(),
+                BorderFactory.createEmptyBorder(10, 20, 10, 20)
+        ));
 
-        // Adding hover effect on button
-        b.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                b.setBackground(b.getBackground().darker());  // Darker color on hover
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                b.setBackground(bg);  // Reset to original color
-            }
-        });
-
-        // Rounded corners for a modern look
-        b.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2, true));
         return b;
     }
 }
