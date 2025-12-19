@@ -5,7 +5,8 @@ import javax.swing.*;
 
 public class SplashScreen extends JFrame {
 
-    public SplashScreen() {
+    // Public constructor that accepts a duration
+    public SplashScreen(long duration) {
         // Create a label with a message or logo
         JLabel label = new JLabel("Welcome to Smart Clinic!", JLabel.CENTER);
         label.setFont(new Font("Arial", Font.BOLD, 30));
@@ -23,14 +24,14 @@ public class SplashScreen extends JFrame {
         setUndecorated(true); // Hide title bar
         setVisible(true);
 
-        // Timer to close the splash screen after 3 seconds and show the main window
-        new Timer(3000, e -> {
-            dispose(); // Close splash screen
-            SwingUtilities.invokeLater(() -> new Main());  // Open the main window
+        // Timer to close the splash screen after the specified duration
+        new Timer((int) duration, e -> {
+            dispose();
+            new Main();  // Open the main window after splash screen
         }).start();
     }
 
     public static void main(String[] args) {
-        new SplashScreen();  // Show splash screen on startup
+        new SplashScreen(3000);  // Show splash screen for 3000 milliseconds (3 seconds)
     }
 }
