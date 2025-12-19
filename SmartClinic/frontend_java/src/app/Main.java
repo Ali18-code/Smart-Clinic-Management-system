@@ -17,7 +17,7 @@ public class Main {
 
         // Show the splash screen directly by creating an instance of SplashScreen
         SwingUtilities.invokeLater(() -> {
-            new SplashScreen();  // Create instance of SplashScreen to show it
+            new SplashScreen(3000);  // Create instance of SplashScreen to show it
         });
 
         // Create the frame for the application

@@ -2,6 +2,7 @@ package app.panels;
 
 import app.util.*;
 import java.awt.*;
+import java.awt.event.*;
 import javax.swing.*;
 
 public class EmergencyPanel extends JPanel {
@@ -34,9 +35,11 @@ public class EmergencyPanel extends JPanel {
         add(form, BorderLayout.NORTH);
 
         JPanel buttons = new JPanel();
-        JButton add = styledButton("Add Emergency Patient", new Color(231,76,60));
-        JButton process = styledButton("Process Next", new Color(241,196,15));
-        JButton route = styledButton("Show Shortest Route", new Color(52,152,219));
+        
+        // Improved buttons with hover effects and better color contrast
+        JButton add = styledButton("Add Emergency Patient", new Color(231, 76, 60));
+        JButton process = styledButton("Process Next", new Color(241, 196, 15));
+        JButton route = styledButton("Show Shortest Route", new Color(52, 152, 219));
 
         buttons.add(add);
         buttons.add(process);
@@ -80,10 +83,26 @@ public class EmergencyPanel extends JPanel {
         JButton b = new JButton(text);
         b.setBackground(bg);
         b.setForeground(Color.WHITE);
-        b.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        b.setFont(new Font("Segoe UI", Font.BOLD, 14));  // Adjusted font size for better readability
         b.setFocusPainted(false);
-        b.setBorder(BorderFactory.createEmptyBorder(8,15,8,15));
+        b.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));  // Improved padding
+        b.setPreferredSize(new Dimension(180, 40));  // Consistent button size
+
+        // Adding hover effect on button
+        b.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                b.setBackground(b.getBackground().darker());  // Darker color on hover
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                b.setBackground(bg);  // Reset to original color
+            }
+        });
+
+        // Rounded corners for a modern look
+        b.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2, true));
         return b;
     }
 }
-
