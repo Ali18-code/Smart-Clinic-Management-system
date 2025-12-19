@@ -7,44 +7,49 @@ import java.awt.*;
 import javax.swing.*;
 
 public class Main {
+
+    // Entry point
     public static void main(String[] args) {
-        // Set the Look and Feel to a modern style
+
+        // Set system look & feel
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        // Show the splash screen directly by creating an instance of SplashScreen
+        // Show splash, then open main UI
         SwingUtilities.invokeLater(() -> {
-            new SplashScreen(3000);  // Create instance of SplashScreen to show it
+            new SplashScreen(3000, Main::openMainWindow);
         });
+    }
 
-        // Create the frame for the application
+    // ================= MAIN APPLICATION WINDOW =================
+    public static void openMainWindow() {
+
         JFrame frame = new JFrame("Smart Clinic Management System");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 600);
-        frame.setLocationRelativeTo(null); // Center the window on the screen
-        frame.setResizable(true); // Allow resizing the window
+        frame.setSize(1100, 700);
+        frame.setLocationRelativeTo(null);
+        frame.setResizable(true);
 
-        // Create a CardLayout for switching between panels
+        // CardLayout container
         CardLayout cardLayout = new CardLayout();
         JPanel mainPanel = new JPanel(cardLayout);
 
-        // Create the panels
+        // Panels
         DashboardPanel dashboardPanel = new DashboardPanel();
         PatientPanel patientPanel = new PatientPanel();
         EmergencyPanel emergencyPanel = new EmergencyPanel();
 
-        // Add panels to the main panel with unique names
+        // Add panels
         mainPanel.add(dashboardPanel, "DashboardPanel");
         mainPanel.add(patientPanel, "PatientPanel");
         mainPanel.add(emergencyPanel, "EmergencyPanel");
 
-        // Display the dashboard first
+        // Show dashboard
         cardLayout.show(mainPanel, "DashboardPanel");
 
-        // Add the mainPanel to the frame
         frame.add(mainPanel);
         frame.setVisible(true);
     }
