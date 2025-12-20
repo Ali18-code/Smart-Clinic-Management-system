@@ -2,6 +2,58 @@
 #include <iostream>
 #include <string>
 
+// --- NormalQueue Implementation ---
+NormalQueue::NormalQueue(int capacity) {
+    cap = capacity;
+    arr = new EmergencyPatient[cap];
+    front = 0;
+    rear = -1;
+    sz = 0;
+}
+
+NormalQueue::~NormalQueue() {
+    delete[] arr;
+}
+
+bool NormalQueue::enqueue(const EmergencyPatient& p) {
+    if (sz == cap) return false;
+    rear = (rear + 1) % cap;
+    arr[rear] = p;
+    sz++;
+    return true;
+}
+
+bool NormalQueue::dequeue(EmergencyPatient& out) {
+    if (sz == 0) return false;
+    out = arr[front];
+    front = (front + 1) % cap;
+    sz--;
+    return true;
+}
+
+// --- UndoStack Implementation ---
+UndoStack::UndoStack(int capacity) {
+    cap = capacity;
+    arr = new std::string[cap];
+    top = -1;
+}
+
+UndoStack::~UndoStack() {
+    delete[] arr;
+}
+
+bool UndoStack::push(const std::string& s) {
+    if (top == cap - 1) return false;
+    arr[++top] = s;
+    return true;
+}
+
+bool UndoStack::pop(std::string& out) {
+    if (top == -1) return false;
+    out = arr[top--];
+    return true;
+}
+
 // --- MaxHeap Implementation ---
 // Used for Priority Queue: Extracts patient with highest severity
 MaxHeap::MaxHeap(int capacity) {
