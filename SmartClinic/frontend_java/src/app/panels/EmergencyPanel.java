@@ -171,7 +171,7 @@ public class EmergencyPanel extends JPanel {
             outputArea.append("> Error: Start and Destination cannot be the same.\n");
             return;
         }
-        executeBackend("{\"action\":\"ROUTE\", \"start\":\"" + start + "\", \"end\":\"" + end + "\"}", "PATHFINDING");
+        executeBackend("{\"action\":\"ROUTE\", \"from\":\"" + start + "\", \"to\":\"" + end + "\"}", "PATHFINDING");
     }
 
     private void executeBackend(String json, String action) {
