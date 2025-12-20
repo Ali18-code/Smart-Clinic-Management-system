@@ -20,8 +20,50 @@ public class Main {
 
         // Show splash, then open main UI
         SwingUtilities.invokeLater(() -> {
-            new SplashScreen(3000, Main::openMainWindow);
+            new SplashScreen(3000, Main::showLoginScreen);
         });
+    }
+
+    // ================= LOGIN SCREEN =================
+    public static void showLoginScreen() {
+        JFrame loginFrame = new JFrame("System Login");
+        loginFrame.setSize(400, 320);
+        loginFrame.setLocationRelativeTo(null);
+        loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        loginFrame.setResizable(false);
+
+        JPanel panel = new JPanel(null);
+        panel.setBackground(new Color(44, 62, 80));
+
+        JLabel title = new JLabel("ADMIN LOGIN");
+        title.setForeground(Color.WHITE);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        title.setBounds(115, 30, 200, 30);
+        panel.add(title);
+
+        JTextField userField = new JTextField("admin");
+        userField.setBounds(75, 90, 250, 40);
+        userField.setBorder(BorderFactory.createTitledBorder("Username"));
+        panel.add(userField);
+
+        JPasswordField passField = new JPasswordField("1234");
+        passField.setBounds(75, 150, 250, 40);
+        passField.setBorder(BorderFactory.createTitledBorder("Password"));
+        panel.add(passField);
+
+        JButton loginBtn = new JButton("LOGIN");
+        loginBtn.setBounds(75, 210, 250, 40);
+        loginBtn.setBackground(new Color(46, 204, 113));
+        loginBtn.setForeground(Color.WHITE);
+        loginBtn.setFocusPainted(false);
+        loginBtn.addActionListener(e -> {
+            loginFrame.dispose();
+            openMainWindow();
+        });
+        panel.add(loginBtn);
+
+        loginFrame.add(panel);
+        loginFrame.setVisible(true);
     }
 
     // ================= MAIN APPLICATION WINDOW =================
