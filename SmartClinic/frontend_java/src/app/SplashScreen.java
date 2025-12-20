@@ -39,3 +39,4 @@ public class SplashScreen extends JWindow {
         timer.start();
     }
 }
+
