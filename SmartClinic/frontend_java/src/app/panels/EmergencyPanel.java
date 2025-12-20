@@ -34,14 +34,34 @@ public class EmergencyPanel extends JPanel {
     private JPanel createHeader() {
         JPanel header = new JPanel(new BorderLayout());
         header.setOpaque(false);
+
+        JPanel textPanel = new JPanel(new GridLayout(2, 1));
+        textPanel.setOpaque(false);
+
         JLabel title = new JLabel("EMERGENCY RESPONSE CONTROL", SwingConstants.LEFT);
         title.setFont(new Font("Segoe UI", Font.BOLD, 26));
         title.setForeground(new Color(44, 62, 80));
+        
         JLabel subtitle = new JLabel("Priority Queue (Max-Heap) & Graph BFS Navigation");
         subtitle.setFont(new Font("Segoe UI", Font.ITALIC, 14));
         subtitle.setForeground(new Color(127, 140, 141));
-        header.add(title, BorderLayout.NORTH);
-        header.add(subtitle, BorderLayout.SOUTH);
+        
+        textPanel.add(title);
+        textPanel.add(subtitle);
+        header.add(textPanel, BorderLayout.CENTER);
+
+        JButton backBtn = modernButton("Back to Dashboard", new Color(149, 165, 166), e -> {
+            Container parent = getParent();
+            if (parent != null && parent.getLayout() instanceof CardLayout) {
+                ((CardLayout) parent.getLayout()).show(parent, "DashboardPanel");
+            }
+        });
+
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        btnPanel.setOpaque(false);
+        btnPanel.add(backBtn);
+        header.add(btnPanel, BorderLayout.EAST);
+
         return header;
     }
 
