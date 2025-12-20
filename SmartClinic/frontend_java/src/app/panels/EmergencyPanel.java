@@ -8,9 +8,14 @@ import javax.swing.border.*;
 
 public class EmergencyPanel extends JPanel {
 
-    private JTextField nameField, severityField, fromField, toField;
+    private JTextField nameField, severityField;
+    private JComboBox<String> fromBox, toBox;
     private JTextArea outputArea;
-    private JPanel cardPanel;
+
+    private static final String[] LOCATIONS = {
+        "Reception", "Triage", "Emergency Room", "ICU", 
+        "Pharmacy", "Radiology", "General Ward", "Operation Theatre", "Cafeteria"
+    };
 
     public EmergencyPanel() {
         setLayout(new BorderLayout(20, 20));
@@ -48,40 +53,65 @@ public class EmergencyPanel extends JPanel {
     }
 
     private JPanel createLeftPanel() {
-        JPanel container = new JPanel(new BorderLayout(0, 20));
+        JPanel container = new JPanel(new GridLayout(2, 1, 0, 20));
         container.setOpaque(false);
 
-        // Admission Form Card
-        JPanel formCard = new JPanel(new GridBagLayout());
-        formCard.setBackground(Color.WHITE);
-        formCard.setBorder(new LineBorder(new Color(231, 76, 60), 2, true));
+        // 1. TRIAGE SECTION (Priority Queue)
+        JPanel triagePanel = createSectionPanel("TRIAGE & ADMISSION (Priority Queue)", new Color(231, 76, 60));
+        
+        nameField = createStyledField();
+        severityField = createStyledField();
+
+        addInputRow(triagePanel, 0, "PATIENT NAME:", nameField);
+        addInputRow(triagePanel, 1, "SEVERITY (1-10):", severityField);
+
+        JPanel triageBtns = new JPanel(new GridLayout(1, 2, 10, 0));
+        triageBtns.setOpaque(false);
+        triageBtns.add(modernButton("ADMIT PATIENT", new Color(192, 57, 43), e -> handleAdmit()));
+        triageBtns.add(modernButton("PROCESS NEXT", new Color(44, 62, 80), e -> handleProcessNext()));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2; 
+        gbc.fill = GridBagConstraints.HORIZONTAL; 
+        gbc.insets = new Insets(15, 0, 0, 0);
+        triagePanel.add(triageBtns, gbc);
+
+        // 2. NAVIGATION SECTION (Graph BFS)
+        JPanel navPanel = createSectionPanel("HOSPITAL NAVIGATION (Graph BFS)", new Color(41, 128, 185));
+        
+        fromBox = createStyledComboBox();
+        toBox = createStyledComboBox();
+
+        addInputRow(navPanel, 0, "START LOCATION:", fromBox);
+        addInputRow(navPanel, 1, "TARGET LOCATION:", toBox);
+
+        JButton routeBtn = modernButton("FIND SHORTEST PATH", new Color(52, 152, 219), e -> handleRoute());
+        navPanel.add(routeBtn, gbc);
+        
+        container.add(triagePanel);
+        container.add(navPanel);
+        return container;
+    }
+
+    private JPanel createSectionPanel(String title, Color borderColor) {
+        JPanel p = new JPanel(new GridBagLayout());
+        p.setBackground(Color.WHITE);
+        p.setBorder(BorderFactory.createCompoundBorder(
+            new LineBorder(borderColor, 2, true),
+            new EmptyBorder(15, 15, 15, 15)
+        ));
+        
+        JLabel lbl = new JLabel(title);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lbl.setForeground(borderColor);
         
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(12, 15, 12, 15);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        nameField = createStyledField("Patient Name");
-        severityField = createStyledField("1-10 (High Priority)");
-        fromField = createStyledField("Start Room");
-        toField = createStyledField("Target Room");
-
-        addInputRow(formCard, gbc, 0, "👤 PATIENT NAME:", nameField);
-        addInputRow(formCard, gbc, 1, "🚨 SEVERITY SCORE:", severityField);
-        addInputRow(formCard, gbc, 2, "📍 CURRENT LOC:", fromField);
-        addInputRow(formCard, gbc, 3, "🏥 DESTINATION:", toField);
-
-        // Action Buttons
-        JPanel btnPanel = new JPanel(new GridLayout(3, 1, 10, 10));
-        btnPanel.setOpaque(false);
+        gbc.gridx = 0; gbc.gridy = -1; gbc.gridwidth = 2; 
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(0, 0, 15, 0);
+        p.add(lbl, gbc);
         
-        btnPanel.add(modernButton("ADD TO PRIORITY HEAP", new Color(192, 57, 43), e -> addEmergency()));
-        btnPanel.add(modernButton("PROCESS HIGHEST PRIORITY", new Color(44, 62, 80), e -> runBackend("PROCESS_NEXT", false)));
-        btnPanel.add(modernButton("GENERATE SHORTEST PATH (BFS)", new Color(41, 128, 185), e -> runBackend("ROUTE", true)));
-
-        container.add(formCard, BorderLayout.CENTER);
-        container.add(btnPanel, BorderLayout.SOUTH);
-        
-        return container;
+        return p;
     }
 
     private JPanel createRightPanel() {
@@ -101,26 +131,51 @@ public class EmergencyPanel extends JPanel {
         scroll.setBorder(null);
         panel.add(scroll, BorderLayout.CENTER);
 
+        JButton clearBtn = new JButton("CLEAR TERMINAL LOGS");
+        clearBtn.setFont(new Font("Consolas", Font.BOLD, 12));
+        clearBtn.setBackground(new Color(45, 50, 55));
+        clearBtn.setForeground(new Color(200, 200, 200));
+        clearBtn.setBorder(new EmptyBorder(8, 0, 8, 0));
+        clearBtn.setFocusPainted(false);
+        clearBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        clearBtn.addActionListener(e -> outputArea.setText(""));
+        panel.add(clearBtn, BorderLayout.SOUTH);
+
         return panel;
     }
 
-    private void addInputRow(JPanel p, GridBagConstraints gbc, int y, String label, JTextField field) {
+    private void addInputRow(JPanel p, int y, String label, JComponent field) {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 0, 5, 0);
+        
         JLabel lbl = new JLabel(label);
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lbl.setForeground(Color.GRAY);
+        
         gbc.gridx = 0; gbc.gridy = y; gbc.weightx = 0.3;
         p.add(lbl, gbc);
+        
         gbc.gridx = 1; gbc.weightx = 0.7;
         p.add(field, gbc);
     }
 
-    private JTextField createStyledField(String placeholder) {
+    private JTextField createStyledField() {
         JTextField f = new JTextField();
-        f.setPreferredSize(new Dimension(200, 40));
+        f.setPreferredSize(new Dimension(200, 35));
         f.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         f.setBorder(BorderFactory.createCompoundBorder(
             new LineBorder(new Color(200, 214, 229), 1), 
             new EmptyBorder(5, 10, 5, 10)));
         return f;
+    }
+
+    private JComboBox<String> createStyledComboBox() {
+        JComboBox<String> box = new JComboBox<>(LOCATIONS);
+        box.setPreferredSize(new Dimension(200, 35));
+        box.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        box.setBackground(Color.WHITE);
+        return box;
     }
 
     private JButton modernButton(String text, Color bg, ActionListener al) {
@@ -140,26 +195,40 @@ public class EmergencyPanel extends JPanel {
         return b;
     }
 
-    // Action Logic (Simplified version of your handlers)
-    private void addEmergency() {
-        if(validateInput()) runBackend("ADD_EMERGENCY", true);
-    }
+    // ---------------- ACTIONS ----------------
 
-    private boolean validateInput() {
-        if (nameField.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Patient name required!");
-            return false;
+    private void handleAdmit() {
+        if (nameField.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter a patient name.");
+            return;
         }
-        return true;
+        String json = "{\"action\":\"ADD_EMERGENCY\", \"name\":\"" + SimpleJson.esc(nameField.getText()) + "\", \"severity\":" + getSeverity() + "}";
+        executeBackend(json, "ADMIT PATIENT");
+        nameField.setText("");
+        severityField.setText("");
     }
 
-    private void runBackend(String action, boolean includeDetails) {
+    private void handleProcessNext() {
+        executeBackend("{\"action\":\"PROCESS_NEXT\"}", "PROCESS NEXT PATIENT");
+    }
+
+    private void handleRoute() {
+        String start = (String) fromBox.getSelectedItem();
+        String end = (String) toBox.getSelectedItem();
+        if (start.equals(end)) {
+            outputArea.append("> Error: Start and Destination cannot be the same.\n");
+            return;
+        }
+        String json = "{\"action\":\"ROUTE\", \"start\":\"" + start + "\", \"end\":\"" + end + "\"}";
+        executeBackend(json, "CALCULATE SHORTEST PATH");
+    }
+
+    private void executeBackend(String jsonPayload, String logAction) {
         new Thread(() -> {
             try {
-                String json = "{\"action\":\"" + action + "\"}"; // Simplified JSON builder
-                FileUtil.writeText(BackendRunner.DATA_DIR + "emergency_input.json", json);
+                FileUtil.writeText(BackendRunner.DATA_DIR + "emergency_input.json", jsonPayload);
                 
-                SwingUtilities.invokeLater(() -> outputArea.append("> Executing " + action + "...\n"));
+                SwingUtilities.invokeLater(() -> outputArea.append("> " + logAction + "...\n"));
                 BackendRunner.run("emergency");
                 
                 String result = FileUtil.readText(BackendRunner.DATA_DIR + "emergency_output.json");
@@ -171,5 +240,12 @@ public class EmergencyPanel extends JPanel {
                 ex.printStackTrace();
             }
         }).start();
+    }
+
+    private int getSeverity() {
+        try {
+            int s = Integer.parseInt(severityField.getText().trim());
+            return Math.max(1, Math.min(10, s));
+        } catch (Exception e) { return 5; } // Default
     }
 }
