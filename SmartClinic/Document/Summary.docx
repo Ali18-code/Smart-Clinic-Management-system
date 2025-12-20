@@ -1,0 +1,329 @@
+🏥 Smart Clinic Management System
+1. Group Information
+Group Members
+Name	Registration ID
+Ali Muhammad	242759
+Hassan bin Nisar	242693
+
+Each group member contributed to all aspects of the project, including:
+
+Java Swing GUI development
+
+C++ Data Structures & Algorithms implementation
+
+Java ↔ C++ file-based integration
+
+GitHub collaboration and version control
+
+Although responsibilities differ per module, both students actively participated in design, coding, testing, and integration.
+
+2. Project Title & System Concept
+Project Title
+
+Smart Clinic Management & Patient Flow Optimization System
+
+System Description
+
+The Smart Clinic Management System is a unified desktop application designed to manage patient records, appointments, emergency handling, and clinic navigation efficiently.
+
+The system emphasizes custom Data Structures and Algorithms (DSAs) to achieve optimized performance and structured data handling.
+
+All modules operate as one integrated system, not as separate mini-projects.
+
+Technology Stack
+
+Java (Swing)
+
+Graphical User Interface
+
+User interaction & input validation
+
+Result visualization
+
+C++
+
+Core Data Structures & Algorithms
+
+No inbuilt DSA libraries used
+
+JSON (File-Based Communication)
+
+Java ↔ C++ integration
+
+3. Module Design
+
+The system consists of two fully integrated modules.
+
+MODULE 1: Patient Records & Appointment Management
+(A) C++ Component – DSA & Algorithm Logic
+Level-1 Data Structures
+1. Arrays
+
+Purpose: Temporary storage of raw patient input
+
+Operations:
+
+Insert
+
+Index-based access
+
+Benefits:
+
+Fast access
+
+Structured preprocessing before advanced DSAs
+
+2. Linked List
+
+Purpose: Dynamic storage of patient records
+
+Operations:
+
+Insert patient
+
+Delete patient
+
+Search patient
+
+Traverse records
+
+Benefits:
+
+Dynamic memory usage
+
+Efficient insertion and deletion
+
+Level-2 Data Structures
+1. AVL Tree (Balanced BST)
+
+Purpose: Store patient records sorted by Patient ID
+
+Operations:
+
+Insert
+
+Delete
+
+Search
+
+Tree rotations (LL, RR, LR, RL)
+
+Benefits:
+
+Automatic balancing
+
+O(log n) time complexity
+
+Faster than linear searching
+
+(B) Java GUI Component
+
+Framework: Java Swing
+
+Interface Style: Single window with tab-based layout
+
+Input Fields
+
+Patient ID
+
+Patient Name
+
+Age
+
+Disease
+
+Appointment Date
+
+Actions
+
+Add Patient
+
+Delete Patient
+
+Search Patient
+
+View All Patients
+
+Output & Visualization
+
+Patient records in tables / text areas
+
+Status messages using dialog boxes
+
+Validation & Error Handling
+
+Empty input validation
+
+Numeric ID validation
+
+Duplicate patient detection
+
+File read/write error handling
+
+The GUI clearly reflects how DSAs process and store data.
+
+(C) Integration Layer (Java ↔ C++)
+
+Integration Method: File-based JSON communication
+
+Data Flow
+
+Java GUI collects user input
+
+Data written to patient_input.json
+
+C++ backend manually parses JSON
+
+DSAs process data
+
+Output written to patient_output.json
+
+Java reads output and displays results
+
+This approach ensures simplicity, reliability, and clear separation between frontend and backend.
+
+(D) Work Allocation – Module 1
+Task	Ali Muhammad	Hassan bin Nisar
+AVL Tree Implementation	Lead	Assist
+Linked List Implementation	Assist	Lead
+Java GUI Design	Lead	Assist
+File-Based Integration	Shared	Shared
+MODULE 2: Emergency Queue & Clinic Navigation
+(A) C++ Component – DSA & Algorithm Logic
+Level-1 Data Structures
+1. Queue
+
+Purpose: Normal patient flow
+
+Operations: Enqueue, Dequeue
+
+Benefit: First-come, first-serve processing
+
+2. Stack
+
+Purpose: Undo last emergency operation (simulation)
+
+Operations: Push, Pop
+
+Benefit: Efficient tracking of recent actions
+
+Level-2 Data Structures
+1. Heap / Priority Queue
+
+Purpose: Manage emergency patients by severity
+
+Operations:
+
+Insert with priority
+
+Extract highest priority
+
+Heapify
+
+Benefits:
+
+Critical patients treated first
+
+O(log n) performance
+
+2. Graph (BFS Traversal)
+
+Purpose: Model clinic layout (rooms, labs, pharmacy)
+
+Operations:
+
+BFS traversal
+
+Shortest path discovery
+
+Benefits:
+
+Efficient navigation
+
+Real-world clinic modeling
+
+(B) Java GUI Component
+Input Fields
+
+Patient Name
+
+Severity Level (1–10)
+
+Starting Room
+
+Destination Room
+
+Actions
+
+Add Emergency Patient
+
+Process Next Patient
+
+Show Shortest Clinic Route
+
+Output
+
+Priority queue order
+
+Route displayed in textual form
+
+Error Handling
+
+Invalid severity values
+
+Incorrect or missing room names
+
+Empty data handling
+
+(C) Integration Layer
+
+Same JSON-based communication for consistency
+
+Files Used:
+
+emergency_input.json
+
+emergency_output.json
+
+(D) Work Allocation – Module 2
+Task	Ali Muhammad	Hassan bin Nisar
+Heap / Priority Queue	Lead	Assist
+Graph (BFS)	Assist	Lead
+Java GUI	Assist	Lead
+Integration	Shared	Shared
+4. Mandatory DSA Requirements (Per Student)
+Student	Level-1 DSAs	Level-2 DSAs
+Ali Muhammad	Arrays, Stack, Queue	AVL Tree, Heap
+Hassan bin Nisar	Linked List	Graph (BFS), Priority Queue
+
+✅ Requirement fully satisfied
+✅ No inbuilt DSA libraries used
+
+5. UML Diagrams (System-Level)
+Use Case Diagram
+
+Actor: Clinic Staff
+
+Use Cases:
+
+Manage Patient Records
+
+Schedule Appointments
+
+Handle Emergency Patients
+
+Find Clinic Routes
+
+Represents a single unified system.
+
+Class Diagram
+
+Includes:
+
+Java GUI classes
+
+File handler & integration classes
+
+C++ DSA classes (AVLTree, Heap, Graph, Queue)
+
+Clear frontend–backend separation
