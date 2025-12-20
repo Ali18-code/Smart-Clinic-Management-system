@@ -114,6 +114,8 @@ public class EmergencyPanel extends JPanel {
         clearBtn.setForeground(new Color(200, 200, 200));
         clearBtn.setBorder(new EmptyBorder(8, 0, 8, 0));
         clearBtn.setFocusPainted(false);
+        clearBtn.setOpaque(true);
+        clearBtn.setContentAreaFilled(true);
         clearBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         clearBtn.addActionListener(e -> outputArea.setText(""));
         panel.add(clearBtn, BorderLayout.SOUTH);
@@ -145,8 +147,15 @@ public class EmergencyPanel extends JPanel {
 
     private JButton modernButton(String text, Color bg, ActionListener al) {
         JButton b = new JButton(text);
-        b.setBackground(bg); b.setForeground(Color.WHITE);
-        b.setFocusPainted(false); b.addActionListener(al);
+        b.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        b.setBackground(bg); 
+        b.setForeground(Color.WHITE);
+        b.setFocusPainted(false); 
+        b.setBorderPainted(false);
+        b.setOpaque(true);
+        b.setContentAreaFilled(true);
+        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.addActionListener(al);
         return b;
     }
 
