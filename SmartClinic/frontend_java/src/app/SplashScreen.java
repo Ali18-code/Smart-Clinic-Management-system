@@ -3,35 +3,39 @@ package app;
 import java.awt.*;
 import javax.swing.*;
 
-public class SplashScreen extends JFrame {
+public class SplashScreen extends JWindow {
 
-    // Public constructor that accepts a duration
-    public SplashScreen(long duration) {
-        // Create a label with a message or logo
-        JLabel label = new JLabel("Welcome to Smart Clinic!", JLabel.CENTER);
-        label.setFont(new Font("Arial", Font.BOLD, 30));
-        label.setForeground(Color.WHITE);
+    public SplashScreen(int duration, Runnable onFinish) {
 
-        // Set background color
-        getContentPane().setBackground(new Color(52, 152, 219));
+        JPanel content = new JPanel(new BorderLayout());
+        content.setBackground(new Color(30, 30, 30));
+        content.setBorder(BorderFactory.createLineBorder(Color.GRAY, 2));
 
-        // Add the label to the frame
-        add(label);
+        JLabel title = new JLabel("SMART CLINIC", SwingConstants.CENTER);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        title.setForeground(Color.WHITE);
 
-        // Set frame properties
-        setSize(500, 300);
+        JLabel sub = new JLabel("Loading system modules...", SwingConstants.CENTER);
+        sub.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        sub.setForeground(Color.LIGHT_GRAY);
+
+        content.add(title, BorderLayout.CENTER);
+        content.add(sub, BorderLayout.SOUTH);
+
+        setContentPane(content);
+        setSize(500, 280);
         setLocationRelativeTo(null);
-        setUndecorated(true); // Hide title bar
+
+        setAlwaysOnTop(true);   // 🔴 CRITICAL
         setVisible(true);
 
-        // Timer to close the splash screen after the specified duration
-        new Timer((int) duration, e -> {
+        Timer timer = new Timer(duration, e -> {
             dispose();
-            new Main();  // Open the main window after splash screen
-        }).start();
-    }
 
-    public static void main(String[] args) {
-        new SplashScreen(3000);  // Show splash screen for 3000 milliseconds (3 seconds)
+            // Ensure main window opens after splash fully closes
+            SwingUtilities.invokeLater(onFinish);
+        });
+        timer.setRepeats(false);
+        timer.start();
     }
 }
