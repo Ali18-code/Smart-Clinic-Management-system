@@ -3,188 +3,215 @@ package app.panels;
 import app.util.BackendRunner;
 import app.util.FileUtil;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 public class DashboardPanel extends JPanel {
 
-    // These must be class-level variables to persist across refreshes
-    private JLabel totalPatientsValue, totalEmergenciesValue, criticalEmergenciesValue, normalEmergenciesValue;
-    private boolean isRefreshing = false; // Flag to prevent overlapping threads
+    private JLabel totalPatients, totalEmergencies, criticalCases;
+    private boolean loading = false;
 
     public DashboardPanel() {
-        setLayout(new BorderLayout(30, 30));
-        setBackground(new Color(44, 62, 80)); // Professional Navy
-        setBorder(new EmptyBorder(30, 40, 30, 40));
+        setLayout(new BorderLayout());
+        setBackground(new Color(245, 248, 250));
+        setBorder(new EmptyBorder(20, 30, 20, 30));
 
-        // Header
-        JLabel title = new JLabel("Smart Clinic Management System", SwingConstants.CENTER);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 32));
-        title.setForeground(Color.WHITE);
-        title.setBorder(new EmptyBorder(0, 0, 20, 0));
-        add(title, BorderLayout.NORTH);
+        add(createHeader(), BorderLayout.NORTH);
+        add(createMainContent(), BorderLayout.CENTER);
 
-        // Center Container
-        JPanel centerContainer = new JPanel(new BorderLayout(30, 30));
-        centerContainer.setOpaque(false);
-
-        // Stats Panel
-        JPanel statsPanel = new JPanel(new GridLayout(1, 4, 20, 20));
-        statsPanel.setOpaque(false);
-
-        // Initialize persistent labels
-        totalPatientsValue = createValueLabel();
-        totalEmergenciesValue = createValueLabel();
-        criticalEmergenciesValue = createValueLabel();
-        normalEmergenciesValue = createValueLabel();
-
-        statsPanel.add(modernStatCard("Total Patients", totalPatientsValue, new Color(46, 204, 113)));
-        statsPanel.add(modernStatCard("Total Emergencies", totalEmergenciesValue, new Color(231, 76, 60)));
-        statsPanel.add(modernStatCard("Critical Cases", criticalEmergenciesValue, new Color(192, 57, 43)));
-        statsPanel.add(modernStatCard("Normal Cases", normalEmergenciesValue, new Color(52, 152, 219)));
-
-        centerContainer.add(statsPanel, BorderLayout.NORTH);
-
-        // Action Buttons
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.CENTER, 25, 40));
-        actions.setOpaque(false);
-
-        JButton btnPatients = modernActionButton("Manage Patients", new Color(52, 73, 94));
-        JButton btnEmergency = modernActionButton("Emergency Room", new Color(52, 73, 94));
-        JButton btnRefresh = modernActionButton("Refresh Live Stats", new Color(26, 188, 156));
-
-        btnPatients.addActionListener(e -> ((CardLayout) getParent().getLayout()).show(getParent(), "PatientPanel"));
-        btnEmergency.addActionListener(e -> ((CardLayout) getParent().getLayout()).show(getParent(), "EmergencyPanel"));
-        btnRefresh.addActionListener(e -> loadStatsFromBackend());
-
-        actions.add(btnPatients);
-        actions.add(btnEmergency);
-        actions.add(btnRefresh);
-
-        centerContainer.add(actions, BorderLayout.CENTER);
-        add(centerContainer, BorderLayout.CENTER);
-
-        // Automatic refresh every 10 seconds
-        loadStatsFromBackend();
-        new Timer(10000, e -> loadStatsFromBackend()).start(); 
+        loadStats();
+        new Timer(10000, e -> loadStats()).start();
     }
 
-    private JLabel createValueLabel() {
-        JLabel lbl = new JLabel("0", SwingConstants.CENTER); // Initialized with 0
-        lbl.setFont(new Font("Segoe UI Semibold", Font.BOLD, 42));
-        lbl.setForeground(Color.WHITE);
-        lbl.setOpaque(false);
-        return lbl;
+    /* ================= HEADER ================= */
+
+    private JPanel createHeader() {
+        JPanel header = new JPanel(new BorderLayout());
+        header.setOpaque(false);
+        header.setBorder(new EmptyBorder(0, 0, 15, 0));
+
+        JLabel title = new JLabel("Smart Clinic Dashboard");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        title.setForeground(new Color(30, 58, 138)); // Medical blue
+
+        JLabel subtitle = new JLabel("Live patient and emergency overview");
+        subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        subtitle.setForeground(new Color(75, 85, 99));
+
+        header.add(title, BorderLayout.NORTH);
+        header.add(subtitle, BorderLayout.SOUTH);
+        return header;
     }
 
-    private JPanel modernStatCard(String title, JLabel valueLabel, Color accentColor) {
-        JPanel card = new JPanel(new BorderLayout(5, 5));
-        card.setBackground(new Color(255, 255, 255, 20)); // Adjusted transparency
-        card.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(accentColor, 2, true),
-                new EmptyBorder(15, 15, 15, 15)
-        ));
+    /* ================= MAIN ================= */
 
-        JLabel t = new JLabel(title.toUpperCase(), SwingConstants.CENTER);
-        t.setForeground(new Color(200, 214, 229));
-        t.setFont(new Font("Segoe UI", Font.BOLD, 12));
+    private JPanel createMainContent() {
+        JPanel main = new JPanel(new BorderLayout(20, 20));
+        main.setOpaque(false);
 
-        card.add(t, BorderLayout.NORTH);
-        card.add(valueLabel, BorderLayout.CENTER);
+        main.add(createSummaryPanel(), BorderLayout.NORTH);
+        main.add(createActionsPanel(), BorderLayout.CENTER);
+
+        return main;
+    }
+
+    /* ================= SUMMARY ================= */
+
+    private JPanel createSummaryPanel() {
+        JPanel panel = new JPanel(new GridLayout(1, 3, 15, 15));
+        panel.setOpaque(false);
+
+        totalPatients = valueLabel();
+        totalEmergencies = valueLabel();
+        criticalCases = valueLabel();
+
+        panel.add(summaryCard("Total Patients", totalPatients, new Color(37, 99, 235)));
+        panel.add(summaryCard("Emergency Cases", totalEmergencies, new Color(220, 38, 38)));
+        panel.add(summaryCard("Critical Alerts", criticalCases, new Color(202, 138, 4)));
+
+        return panel;
+    }
+
+    private JPanel summaryCard(String title, JLabel value, Color accent) {
+        JPanel card = new JPanel(new BorderLayout(6, 6));
+        card.setBackground(Color.WHITE);
+        card.setBorder(new LineBorder(new Color(229, 231, 235)));
+
+        JLabel t = new JLabel(title);
+        t.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        t.setForeground(new Color(55, 65, 81));
+
+        value.setForeground(accent);
+
+        JPanel pad = new JPanel(new BorderLayout());
+        pad.setOpaque(false);
+        pad.setBorder(new EmptyBorder(12, 14, 12, 14));
+        pad.add(t, BorderLayout.NORTH);
+        pad.add(value, BorderLayout.CENTER);
+
+        card.add(pad);
         return card;
     }
 
-    private JButton modernActionButton(String text, Color bg) {
+    private JLabel valueLabel() {
+        JLabel l = new JLabel("0");
+        l.setFont(new Font("Segoe UI", Font.BOLD, 34));
+        l.setForeground(new Color(31, 41, 55));
+        return l;
+    }
+
+    /* ================= ACTIONS ================= */
+
+    private JPanel createActionsPanel() {
+        JPanel panel = new JPanel(new GridLayout(2, 2, 15, 15));
+        panel.setOpaque(false);
+        panel.setBorder(new EmptyBorder(20, 0, 0, 0));
+
+        panel.add(actionButton("Patient Management", "PatientPanel"));
+        panel.add(actionButton("Emergency Room", "EmergencyPanel"));
+        panel.add(actionButton("Reports & Analytics", "ReportsPanel"));
+        panel.add(refreshButton());
+
+        return panel;
+    }
+
+    private JButton actionButton(String text, String target) {
         JButton b = new JButton(text);
-        b.setPreferredSize(new Dimension(240, 60));
-        b.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        b.setForeground(Color.WHITE);
-        b.setBackground(bg);
-        b.setOpaque(true);
-        b.setContentAreaFilled(true);
-        b.setBorderPainted(false);
-        b.setFocusPainted(false);
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        b.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) { b.setBackground(bg.brighter()); }
-            public void mouseExited(MouseEvent e) { b.setBackground(bg); }
-        });
+        styleActionButton(b);
+        b.addActionListener(e ->
+                ((CardLayout) getParent().getLayout()).show(getParent(), target)
+        );
         return b;
     }
 
-    private void loadStatsFromBackend() {
-        if (isRefreshing) return; // Prevent multiple simultaneous refreshes
-        isRefreshing = true;
+    private JButton refreshButton() {
+        JButton b = new JButton("Refresh Live Data");
+        styleActionButton(b);
+        b.addActionListener(e -> loadStats());
+        return b;
+    }
+
+    private void styleActionButton(JButton b) {
+        b.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        b.setBackground(Color.WHITE);
+        b.setForeground(new Color(30, 58, 138));
+        b.setBorder(new LineBorder(new Color(203, 213, 225)));
+        b.setFocusPainted(false);
+        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        b.setPreferredSize(new Dimension(0, 52));
+    }
+
+    /* ================= DATA ================= */
+
+    private void loadStats() {
+        if (loading) return;
+        loading = true;
 
         new Thread(() -> {
             try {
-                // Trigger backend to ensure latest data is generated
-                FileUtil.writeText(BackendRunner.DATA_DIR + "patient_input.json", "{\"action\":\"VIEW_ALL\"}");
+                FileUtil.writeText(
+                        BackendRunner.DATA_DIR + "patient_input.json",
+                        "{\"action\":\"VIEW_ALL\"}"
+                );
                 BackendRunner.run("patient");
 
-                String pData = safeRead(BackendRunner.DATA_DIR + "patients_db.json", BackendRunner.DATA_DIR + "patient_output.json");
-                String eData = safeRead(BackendRunner.DATA_DIR + "emergency_db.json", BackendRunner.DATA_DIR + "emergency_output.json");
+                String p = safeRead(
+                        BackendRunner.DATA_DIR + "patients_db.json",
+                        BackendRunner.DATA_DIR + "patient_output.json"
+                );
+                String e = safeRead(
+                        BackendRunner.DATA_DIR + "emergency_db.json",
+                        BackendRunner.DATA_DIR + "emergency_output.json"
+                );
 
-                int totalP = countOccurrences(pData, "\"id\"");
-                int totalE = countOccurrences(eData, "\"name\"");
-                int crit = countSeverityAtLeast(eData, 7);
-                int norm = Math.max(0, totalE - crit);
+                int tp = count(p, "\"id\"");
+                int te = count(e, "\"name\"");
+                int crit = countSeverity(e, 7);
 
-                // Update UI safely on Event Dispatch Thread
                 SwingUtilities.invokeLater(() -> {
-                    totalPatientsValue.setText(String.valueOf(totalP));
-                    totalEmergenciesValue.setText(String.valueOf(totalE));
-                    criticalEmergenciesValue.setText(String.valueOf(crit));
-                    normalEmergenciesValue.setText(String.valueOf(norm));
-                    
-                    // Repaint to ensure old text is cleared from the graphics buffer
-                    repaint(); 
+                    totalPatients.setText(String.valueOf(tp));
+                    totalEmergencies.setText(String.valueOf(te));
+                    criticalCases.setText(String.valueOf(crit));
                 });
 
-            } catch (Exception ex) {
-                System.err.println("Refresh Error: " + ex.getMessage());
+            } catch (Exception ignored) {
             } finally {
-                isRefreshing = false;
+                loading = false;
             }
         }).start();
     }
 
-    private String safeRead(String path1, String path2) {
-        try { return FileUtil.readText(path1); } 
+    private String safeRead(String p1, String p2) {
+        try { return FileUtil.readText(p1); }
         catch (Exception e1) {
-            try { return FileUtil.readText(path2); } 
+            try { return FileUtil.readText(p2); }
             catch (Exception e2) { return ""; }
         }
     }
 
-    private int countOccurrences(String text, String token) {
-        if (text == null || text.length() < 5) return 0;
-        int count = 0, idx = 0;
-        while ((idx = text.indexOf(token, idx)) != -1) {
-            count++;
-            idx += token.length();
+    private int count(String text, String token) {
+        if (text == null) return 0;
+        int c = 0, i = 0;
+        while ((i = text.indexOf(token, i)) != -1) {
+            c++; i += token.length();
         }
-        return count;
+        return c;
     }
 
-    private int countSeverityAtLeast(String json, int threshold) {
-        if (json == null || json.isEmpty()) return 0;
-        int count = 0, idx = 0;
-        while ((idx = json.indexOf("\"severity\"", idx)) != -1) {
-            int colon = json.indexOf(":", idx);
-            if (colon != -1) {
-                int j = colon + 1;
-                while (j < json.length() && !Character.isDigit(json.charAt(j))) j++;
-                StringBuilder num = new StringBuilder();
-                while (j < json.length() && Character.isDigit(json.charAt(j))) num.append(json.charAt(j++));
-                try {
-                    if (!num.toString().isEmpty() && Integer.parseInt(num.toString()) >= threshold) count++;
-                } catch (Exception ignore) {}
-                idx = j;
-            } else idx++;
+    private int countSeverity(String json, int threshold) {
+        if (json == null) return 0;
+        int count = 0, i = 0;
+        while ((i = json.indexOf("\"severity\"", i)) != -1) {
+            int j = json.indexOf(":", i) + 1;
+            while (j < json.length() && !Character.isDigit(json.charAt(j))) j++;
+            StringBuilder n = new StringBuilder();
+            while (j < json.length() && Character.isDigit(json.charAt(j))) n.append(json.charAt(j++));
+            try {
+                if (!n.toString().isEmpty() && Integer.parseInt(n.toString()) >= threshold)
+                    count++;
+            } catch (Exception ignore) {}
+            i = j;
         }
         return count;
     }
