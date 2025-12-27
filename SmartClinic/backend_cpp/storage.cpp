@@ -1,93 +1,202 @@
 #include "storage.h"
 #include "json_util.h"
 
-// helper to extract JSON objects one by one
-static bool parseNextObject(const std::string& j, int& i, std::string& objOut) {
-    while (i < (int)j.size() && j[i] != '{') i++;
-    if (i >= (int)j.size()) return false;
-
-    int start = i;
-    int depth = 0;
-
-    while (i < (int)j.size()) {
-        if (j[i] == '{') depth++;
-        else if (j[i] == '}') {
-            depth--;
-            if (depth == 0) {
-                objOut = j.substr(start, i - start + 1);
-                i++;
-                return true;
-            }
-        }
-        i++;
-    }
-    return false;
-}
+#include <vector>
+#include <cstdio>   // for snprintf
 
 namespace storage {
 
-bool loadPatients(const std::string& dbPath, PatientAVL& avl) {
-    std::string json = sj::readAllText(dbPath);
-    if (json.empty()) return true;
+    // ================= PATIENTS =================
 
-    int i = 0;
-    std::string obj;
-    while (parseNextObject(json, i, obj)) {
-        Patient p;
-        p.id = sj::getInt(obj, "id", 0);
-        p.name = sj::getString(obj, "name");
-        p.age = sj::getInt(obj, "age", 0);
-        p.disease = sj::getString(obj, "disease");
-        p.date = sj::getString(obj, "date");
+    bool loadPatients(const std::string& dbPath, PatientAVL& avl) {
 
-        if (p.id != 0)
-            avl.insert(p);
-    }
-    return true;
-}
+        // Read file into a string
+        std::string json = sj::readAllText(dbPath);
 
-bool savePatients(const std::string& dbPath, PatientAVL& avl) {
-    return sj::writeAllText(dbPath, avl.toJsonArray());
-}
+        if (json.empty()) {
+            return false;   // file missing or empty
+        }
 
-bool loadEmergencyHeap(const std::string& dbPath, MaxHeap& heap) {
-    std::string json = sj::readAllText(dbPath);
-    if (json.empty()) return true;
+        size_t pos = 0;
 
-    int i = 0;
-    std::string obj;
-    while (parseNextObject(json, i, obj)) {
-        EmergencyPatient p;
-        p.name = sj::getString(obj, "name");
-        p.severity = sj::getInt(obj, "severity", 1);
+        // Keep finding { ... } blocks
+        while (true) {
 
-        if (!p.name.empty())
-            heap.insert(p);
-    }
-    return true;
-}
+            pos = json.find('{', pos);
 
-bool saveEmergencyHeap(const std::string& dbPath, MaxHeap& heap) {
-    EmergencyPatient temp[500];
-    int n = 0;
-    EmergencyPatient e;
+            if (pos == std::string::npos) {
+                break;  // no more objects
+            }
 
-    while (heap.extractMax(e)) {
-        temp[n++] = e;
+            size_t end = json.find('}', pos);
+
+            if (end == std::string::npos) {
+                break;  // malformed JSON
+            }
+
+            std::string block = json.substr(pos, end - pos + 1);
+
+            Patient p;
+            p.id = sj::getInt(block, "id", 0);
+            p.name = sj::getString(block, "name");
+            p.age = sj::getInt(block, "age", 0);
+            p.disease = sj::getString(block, "disease");
+            p.date = sj::getString(block, "date");
+
+            if (p.id > 0) {
+                avl.insert(p);
+            }
+
+            pos = end + 1;
+        }
+
+        return true;
     }
 
-    std::string out = "[";
-    for (int i = 0; i < n; i++) {
-        out += "{\"name\":\"" + sj::esc(temp[i].name) +
-               "\",\"severity\":" + std::to_string(temp[i].severity) + "}";
-        if (i != n - 1) out += ",";
+    bool savePatients(const std::string& dbPath, PatientAVL& avl) {
+
+        std::string json = avl.toJsonArray();
+
+        return sj::writeAllText(dbPath, json);
     }
-    out += "]";
 
-    for (int i = 0; i < n; i++)
-        heap.insert(temp[i]);
 
-    return sj::writeAllText(dbPath, out);
-}
+    // ================= EMERGENCY HEAP =================
+
+    bool loadEmergencyHeap(const std::string& dbPath, MaxHeap& heap) {
+
+        std::string json = sj::readAllText(dbPath);
+
+        if (json.empty()) {
+            return false;
+        }
+
+        size_t pos = 0;
+
+        while (true) {
+
+            pos = json.find('{', pos);
+
+            if (pos == std::string::npos) {
+                break;
+            }
+
+            size_t end = json.find('}', pos);
+
+            if (end == std::string::npos) {
+                break;
+            }
+
+            std::string block = json.substr(pos, end - pos + 1);
+
+            EmergencyPatient ep;
+            ep.name = sj::getString(block, "name");
+            ep.severity = sj::getInt(block, "severity", 0);
+
+            if (!ep.name.empty()) {
+                heap.insert(ep);
+            }
+
+            pos = end + 1;
+        }
+
+        return true;
+    }
+
+    bool saveEmergencyHeap(const std::string& dbPath, MaxHeap& heap) {
+
+        std::vector<EmergencyPatient> backup;
+
+        EmergencyPatient ep;
+
+        // Take everything out of heap
+        while (heap.extractMax(ep)) {
+            backup.push_back(ep);
+        }
+
+        // Put back into heap
+        for (size_t i = 0; i < backup.size(); i++) {
+            heap.insert(backup[i]);
+        }
+
+        // Build JSON text
+        std::string json = "[";
+
+        for (size_t i = 0; i < backup.size(); i++) {
+
+            json += "{";
+            json += "\"name\":\"" + sj::esc(backup[i].name) + "\",";
+            json += "\"severity\":" + std::to_string(backup[i].severity);
+            json += "}";
+
+            if (i < backup.size() - 1) {
+                json += ",";
+            }
+        }
+
+        json += "]";
+
+        return sj::writeAllText(dbPath, json);
+    }
+
+
+    // ================= APPOINTMENTS =================
+
+    bool loadAppointments(const std::string& dbPath, AppointmentQueue& queue) {
+
+        std::string json = sj::readAllText(dbPath);
+
+        if (json.empty()) {
+            return false;
+        }
+
+        size_t pos = 0;
+
+        while (true) {
+
+            pos = json.find('{', pos);
+
+            if (pos == std::string::npos) {
+                break;
+            }
+
+            size_t end = json.find('}', pos);
+
+            if (end == std::string::npos) {
+                break;
+            }
+
+            std::string block = json.substr(pos, end - pos + 1);
+
+            Appointment a;
+
+            a.patientId = sj::getInt(block, "patientId", 0);
+
+            std::string pname = sj::getString(block, "patientName");
+            std::string doc   = sj::getString(block, "doctor");
+            std::string time  = sj::getString(block, "time");
+
+            snprintf(a.patientName, sizeof(a.patientName), "%s", pname.c_str());
+            snprintf(a.doctor,      sizeof(a.doctor),      "%s", doc.c_str());
+            snprintf(a.time,        sizeof(a.time),        "%s", time.c_str());
+
+            queue.enqueue(a);
+
+            pos = end + 1;
+        }
+
+        return true;
+    }
+
+    bool saveAppointments(const std::string& dbPath, AppointmentQueue& queue) {
+
+        char temp[16384];
+
+        queue.toJson(temp);
+
+        std::string json = temp;
+
+        return sj::writeAllText(dbPath, json);
+    }
 
 }
