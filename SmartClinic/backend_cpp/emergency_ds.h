@@ -1,62 +1,65 @@
 #pragma once
 #include <string>
+#include <vector>
+
+using namespace std;
 
 struct EmergencyPatient {
-    std::string name;
+    string name;
     int severity; // 1-10
 };
 
 class NormalQueue {
 private:
-    EmergencyPatient* arr;
-    int cap, front, rear, sz;
+    vector<EmergencyPatient> queue;
+    int capacity, front, rear, currentSize;
 public:
     NormalQueue(int capacity = 200);
     ~NormalQueue();
-    bool enqueue(const EmergencyPatient& p);
+    bool enqueue(const EmergencyPatient& patient);
     bool dequeue(EmergencyPatient& out);
-    int size() const { return sz; }
+    int size() const { return currentSize; }
 };
 
 class UndoStack {
 private:
-    std::string* arr;
+    vector<string> stack;
     int top;
-    int cap;
+    int capacity;
 public:
     UndoStack(int capacity = 200);
     ~UndoStack();
-    bool push(const std::string& s);
-    bool pop(std::string& out);
+    bool push(const string& item);
+    bool pop(string& out);
 };
 
 class MaxHeap {
 private:
-    EmergencyPatient* heap;
-    int cap, sz;
+    vector<EmergencyPatient> heap;
+    int capacity, currentSize;
     void swap(int i, int j);
-    void heapifyUp(int i);
-    void heapifyDown(int i);
+    void heapifyUp(int index);
+    void heapifyDown(int index);
 public:
     MaxHeap(int capacity = 200);
     ~MaxHeap();
-    bool insert(const EmergencyPatient& p);
+    bool insert(const EmergencyPatient& patient);
     bool extractMax(EmergencyPatient& out);
     bool peek(EmergencyPatient& out) const;
-    int size() const { return sz; }
+    int size() const { return currentSize; }
 };
 
 class ClinicGraph {
 private:
     static const int MAXV = 30;
-    std::string names[MAXV];
-    int adj[MAXV][MAXV];
-    int vCount;
+    vector<string> roomNames;
+    vector<vector<int>> adjacency;
+    int vertexCount;
 
-    int indexOf(const std::string& name) const;
+    int indexOf(const string& name) const;
 public:
     ClinicGraph();
-    void addRoom(const std::string& name);
-    void addEdge(const std::string& a, const std::string& b); // undirected
-    bool shortestPathBFS(const std::string& from, const std::string& to, std::string& pathOut);
+    void addRoom(const string& name);
+    void addEdge(const string& a, const string& b); // undirected
+    bool shortestPathBFS(const string& from, const string& to, string& pathOut);
 };
