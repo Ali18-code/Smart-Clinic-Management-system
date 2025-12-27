@@ -1,33 +1,56 @@
 #pragma once
 #include <string>
+#include <vector>
+using namespace std;
 
 struct Patient {
     int id;
-    std::string name;
+    string name;
     int age;
-    std::string disease;
-    std::string date;
+    string disease;
+    string date;
 };
 
-struct ListNode {
-    Patient data;
-    ListNode* next;
-    ListNode(const Patient& p): data(p), next(nullptr) {}
-};
-
+// ----------------- Linked List using vector -----------------
 class PatientList {
 private:
-    ListNode* head;
+    vector<Patient> patients;
+
 public:
-    PatientList(): head(nullptr) {}
-    ~PatientList();
-    bool insert(const Patient& p);
-    bool removeById(int id);
-    Patient* findById(int id);
-    int count() const;
-    ListNode* getHead() const { return head; }
+    PatientList() {}
+    ~PatientList() { patients.clear(); }
+
+    bool insert(const Patient& p) {
+        for (auto& patient : patients) {
+            if (patient.id == p.id) return false;
+        }
+        patients.push_back(p);
+        return true;
+    }
+
+    bool removeById(int id) {
+        for (size_t i = 0; i < patients.size(); i++) {
+            if (patients[i].id == id) {
+                patients.erase(patients.begin() + i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    Patient* findById(int id) {
+        for (auto& patient : patients) {
+            if (patient.id == id) return &patient;
+        }
+        return nullptr;
+    }
+
+    int count() const { return patients.size(); }
+
+    vector<Patient>& getAll() { return patients; }
 };
 
+// ----------------- AVL Tree -----------------
 struct AVLNode {
     Patient data;
     AVLNode* left;
@@ -40,23 +63,23 @@ class PatientAVL {
 private:
     AVLNode* root;
 
-    int h(AVLNode* n);
-    int bal(AVLNode* n);
+    int h(AVLNode* n) { return n ? n->height : 0; }
+    int bal(AVLNode* n) { return n ? (h(n->left) - h(n->right)) : 0; }
     AVLNode* rightRotate(AVLNode* y);
     AVLNode* leftRotate(AVLNode* x);
     AVLNode* insertRec(AVLNode* node, const Patient& p, bool& ok);
     AVLNode* minNode(AVLNode* node);
     AVLNode* deleteRec(AVLNode* node, int id, bool& ok);
     Patient* searchRec(AVLNode* node, int id);
-    void inorderToJson(AVLNode* node, std::string& out, bool& first);
+    void inorderToJson(AVLNode* node, string& out, bool& first);
     void destroy(AVLNode* node);
 
 public:
     PatientAVL(): root(nullptr) {}
     ~PatientAVL() { destroy(root); }
+
     bool insert(const Patient& p);
     bool remove(int id);
     Patient* search(int id);
-    std::string toJsonArray(); // returns patients as JSON array sorted by id
+    string toJsonArray();
 };
-
