@@ -358,3 +358,4 @@ This project demonstrates:
 ⭐ Safe hospital workflow modeling
 ⭐ Efficient search, storage & prioritization
 <img width="1155" height="802" alt="UML" src="https://github.com/user-attachments/assets/62d15e38-a67e-42c8-9c54-4c69f78793f9" />
+<img width="411" height="824" alt="Use case diagram" src="https://github.com/user-attachments/assets/e3f9e46a-8401-46c5-a358-bfa565d4ce33" />
