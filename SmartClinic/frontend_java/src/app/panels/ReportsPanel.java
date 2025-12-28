@@ -2,19 +2,22 @@ package app.panels;
 
 import app.util.BackendRunner;
 import app.util.SimpleJson;
-import java.awt.*;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.Vector;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import java.awt.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.Vector;
 
 public class ReportsPanel extends JPanel {
+
+    private JPanel mainPanel;   // ❤️ CardLayout parent (optional)
 
     private JLabel totalPatientsLabel;
     private JLabel normalPatientsLabel;
@@ -27,7 +30,16 @@ public class ReportsPanel extends JPanel {
     private JLabel statusLabel;
     private JButton generateBtn;
 
+    /* ========= CONSTRUCTORS ========= */
+
+    // 🔥 Allows ReportsPanel() to still work
     public ReportsPanel() {
+        this(null);
+    }
+
+    // 🔥 Preferred constructor when using CardLayout
+    public ReportsPanel(JPanel mainPanel) {
+        this.mainPanel = mainPanel;
 
         setLayout(new BorderLayout(18, 18));
         setBorder(new EmptyBorder(20, 30, 20, 30));
@@ -43,55 +55,55 @@ public class ReportsPanel extends JPanel {
         showStatus("Click “Generate Report” to view clinic analytics.");
     }
 
+    /* ========= HEADER ========= */
     private JPanel createHeader() {
+
         JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
 
-        JLabel title = new JLabel("Clinic Reports");
+        JLabel title = new JLabel("Clinic Reports & Analytics");
         title.setFont(new Font("Segoe UI", Font.BOLD, 26));
 
-        JLabel subtitle = new JLabel("Patient statistics and emergency analysis");
+        JLabel subtitle = new JLabel("Patient statistics and emergency overview");
         subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         subtitle.setForeground(new Color(107, 114, 128));
 
-        JButton backButton = new JButton("←  Back");
+        JButton backButton = new JButton("← Back");
         backButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
         backButton.setForeground(Color.WHITE);
         backButton.setBackground(new Color(59, 130, 246));
         backButton.setFocusPainted(false);
         backButton.setBorderPainted(false);
-        backButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        backButton.setPreferredSize(new Dimension(110, 36));
-        backButton.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
 
-        // ⭐ SAFE BACK BUTTON — works even when wrapped in panels
+        // ❤️ Works in BOTH CardLayout & Tabbed UI
         backButton.addActionListener(e -> {
+
+            if (mainPanel != null && mainPanel.getLayout() instanceof CardLayout layout) {
+                layout.show(mainPanel, "DashboardPanel");
+                return;
+            }
 
             JTabbedPane tabs = (JTabbedPane)
                     SwingUtilities.getAncestorOfClass(JTabbedPane.class, ReportsPanel.this);
 
-            if (tabs != null) {
-                // Go to first tab (Dashboard)
+            if (tabs != null)
                 tabs.setSelectedIndex(0);
-
-                // OR if your tab name is "Dashboard", use:
-                // int idx = tabs.indexOfTab("Dashboard");
-                // if (idx >= 0) tabs.setSelectedIndex(idx);
-            } else {
-                System.out.println("No JTabbedPane found — cannot go back");
-            }
+            else
+                System.out.println("No navigation container found");
         });
 
-        JPanel titlePanel = new JPanel(new BorderLayout());
-        titlePanel.setOpaque(false);
-        titlePanel.add(title, BorderLayout.NORTH);
-        titlePanel.add(subtitle, BorderLayout.SOUTH);
+        JPanel left = new JPanel(new BorderLayout());
+        left.setOpaque(false);
+        left.add(title, BorderLayout.NORTH);
+        left.add(subtitle, BorderLayout.SOUTH);
 
-        panel.add(titlePanel, BorderLayout.CENTER);
+        panel.add(left, BorderLayout.CENTER);
         panel.add(backButton, BorderLayout.EAST);
 
         return panel;
     }
+
+    /* ========= STATUS VIEW ========= */
 
     private JPanel createContentPanel() {
 
@@ -113,6 +125,8 @@ public class ReportsPanel extends JPanel {
         revalidate();
         repaint();
     }
+
+    /* ========= REPORT VIEW ========= */
 
     private void showReportData() {
 
@@ -141,13 +155,13 @@ public class ReportsPanel extends JPanel {
         repaint();
     }
 
-    private JPanel metricCard(String name, JLabel value, Color accent) {
+    private JPanel metricCard(String title, JLabel value, Color accent) {
 
         JPanel card = new JPanel(new BorderLayout());
         card.setBackground(Color.WHITE);
         card.setBorder(new LineBorder(new Color(229, 231, 235)));
 
-        JLabel t = new JLabel(name);
+        JLabel t = new JLabel(title);
         t.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         t.setForeground(new Color(107, 114, 128));
 
@@ -161,9 +175,10 @@ public class ReportsPanel extends JPanel {
         pad.add(value, BorderLayout.CENTER);
 
         card.add(pad);
-
         return card;
     }
+
+    /* ========= TABLE ========= */
 
     private JPanel createTableSection() {
 
@@ -184,7 +199,9 @@ public class ReportsPanel extends JPanel {
         tableModel = new DefaultTableModel(
                 new String[]{"#", "Patient Name", "Severity"}, 0) {
 
-            public boolean isCellEditable(int r, int c) { return false; }
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
         };
 
         emergenciesTable = new JTable(tableModel);
@@ -203,6 +220,28 @@ public class ReportsPanel extends JPanel {
         return new JScrollPane(emergenciesTable);
     }
 
+    private static class SeverityRenderer extends DefaultTableCellRenderer {
+
+        public Component getTableCellRendererComponent(
+                JTable t, Object v, boolean s, boolean f, int r, int c) {
+
+            super.getTableCellRendererComponent(t, v, s, f, r, c);
+
+            setHorizontalAlignment(CENTER);
+            setFont(getFont().deriveFont(Font.BOLD));
+
+            int sev = Integer.parseInt(v.toString());
+
+            if (sev >= 8) setForeground(new Color(185, 28, 28));
+            else if (sev >= 5) setForeground(new Color(217, 119, 6));
+            else setForeground(new Color(21, 128, 61));
+
+            return this;
+        }
+    }
+
+    /* ========= GENERATE BUTTON ========= */
+
     private JPanel createBottomPanel() {
 
         JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -213,16 +252,14 @@ public class ReportsPanel extends JPanel {
         generateBtn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         generateBtn.setForeground(Color.WHITE);
         generateBtn.setBackground(new Color(16, 185, 129));
-        generateBtn.setFocusPainted(false);
-        generateBtn.setBorderPainted(false);
-        generateBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        generateBtn.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
 
         generateBtn.addActionListener(e -> generateReport());
 
         p.add(generateBtn);
         return p;
     }
+
+    /* ========= BACKEND CALL ========= */
 
     private void generateReport() {
 
@@ -249,7 +286,6 @@ public class ReportsPanel extends JPanel {
                     return sb.toString();
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
                     return null;
                 }
             }
@@ -262,7 +298,7 @@ public class ReportsPanel extends JPanel {
                     String json = get();
 
                     if (json == null || json.isEmpty()) {
-                        showStatus("❌ Backend returned no report data.");
+                        showStatus("❌ Backend returned no data");
                         return;
                     }
 
@@ -270,7 +306,7 @@ public class ReportsPanel extends JPanel {
                     updateUI(json);
                 }
                 catch (Exception e) {
-                    showStatus("❌ Failed to process report.");
+                    showStatus("❌ Failed to process report");
                 }
             }
         };
@@ -280,49 +316,24 @@ public class ReportsPanel extends JPanel {
 
     private void updateUI(String json) {
 
-        int totalPatients = SimpleJson.getInt(json, "totalPatients", 0);
-        if (totalPatients == 0) {
-            showStatus("ⓘ Report generated, but no patient data was found.\n" +
-                    "Please ensure 'patients_db.json' and 'emergency_db.json' contain data.");
-            return;
-        }
-
-        totalPatientsLabel.setText("" + totalPatients);
+        totalPatientsLabel.setText("" + SimpleJson.getInt(json, "totalPatients", 0));
         normalPatientsLabel.setText("" + SimpleJson.getInt(json, "normalPatients", 0));
         emergencyPatientsLabel.setText("" + SimpleJson.getInt(json, "emergencyPatients", 0));
 
         tableModel.setRowCount(0);
 
         SimpleJson root = new SimpleJson(json);
-        ArrayList<SimpleJson> emergencies = root.getJsonArray("topEmergencies");
+        ArrayList<SimpleJson> list = root.getJsonArray("topEmergencies");
 
         int i = 1;
-        for (SimpleJson emergency : emergencies) {
+        for (SimpleJson e : list) {
+
             Vector<Object> row = new Vector<>();
             row.add(i++);
-            row.add(emergency.getString("name"));
-            row.add(emergency.getInt("severity", 0));
+            row.add(e.getString("name"));
+            row.add(e.getInt("severity", 0));
+
             tableModel.addRow(row);
-        }
-    }
-
-    private static class SeverityRenderer extends DefaultTableCellRenderer {
-
-        public Component getTableCellRendererComponent(
-                JTable t, Object v, boolean s, boolean f, int r, int c) {
-
-            super.getTableCellRendererComponent(t, v, s, f, r, c);
-
-            setHorizontalAlignment(CENTER);
-            setFont(getFont().deriveFont(Font.BOLD));
-
-            int sev = Integer.parseInt(v.toString());
-
-            if (sev >= 8) setForeground(new Color(185, 28, 28));
-            else if (sev >= 5) setForeground(new Color(217, 119, 6));
-            else setForeground(new Color(21, 128, 61));
-
-            return this;
         }
     }
 }
